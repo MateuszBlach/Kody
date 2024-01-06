@@ -9,13 +9,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
+
 namespace Kody
 {
     public partial class Generator : Form
     {
+        int first;
         public Generator()
         {
             InitializeComponent();
+            
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -30,11 +34,11 @@ namespace Kody
         
         private void btnBarcode_Click2(object sender, EventArgs e)
         {
-            Zen.Barcode.CodeEan13BarcodeDraw barcode = Zen.Barcode.BarcodeDrawFactory.CodeEan13WithChecksum; // ustawienie trybu generowanie kodow EAN-13
+            //Zen.Barcode.CodeEan13BarcodeDraw barcode = Zen.Barcode.BarcodeDrawFactory.CodeEan13WithChecksum; // ustawienie trybu generowanie kodow EAN-13
             if(txtBarcode.Text.Length == 12) {
                 
-                pictureBox1.Padding = new Padding(50,50,50,50);
-                pictureBox1.Image = barcode.Draw(txtBarcode.Text, 100,trackBar1.Value); // stworzenie obrazu w oknie na podstawie cyfr wprowadzonych w polu tekstowym
+                //pictureBox1.Padding = new Padding(50,50,50,50);
+                //pictureBox1.Image = barcode.Draw(txtBarcode.Text, 100,trackBar1.Value); // stworzenie obrazu w oknie na podstawie cyfr wprowadzonych w polu tekstowym
    
                 
                 String input = txtBarcode.Text;
@@ -88,6 +92,7 @@ namespace Kody
                 int barHeight = 100;
                 int labelHeight = 20;
                 pictureBox1.Padding = new Padding(50, 50, 50, 50);
+
                 // Generate EAN-13 barcode string
                 string input = txtBarcode.Text;
                 int checkSum = GenerateEAN13Checksum(input);
@@ -133,6 +138,10 @@ namespace Kody
             for (int i = 0; i < data.Length; i++)
             {
                 int digit = int.Parse(data[i].ToString());
+                if (i == 0)
+                {
+                    first = digit;
+                }
                 if (i % 2 == 0)
                 {
                     evenSum += digit;
@@ -160,11 +169,21 @@ namespace Kody
             {
                 graphics.Clear(Color.White);
 
+
+
                 int x = offsetX;
-                for (int i = 0; i < data.Length; i++)
+
+
+                graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2) + 10);
+                x += barWidth;
+                x += barWidth;
+                graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2) + 10);
+                x += barWidth;
+                for (int i = 1; i < data.Length; i++)
                 {
                     int digit = int.Parse(data[i].ToString());
-                    string binaryCode = GetEAN13BinaryCode(digit);
+                    string binaryCode = GetEAN13BinaryCode(digit,i);
+                    Console.WriteLine(binaryCode);
                     for (int j = 0; j < binaryCode.Length; j++)
                     {
                         if (binaryCode[j] == '1')
@@ -175,11 +194,22 @@ namespace Kody
                     }
 
                     // Add additional separator bar after every 7 bars
-                    if ((i + 1) % 7 == 0)
+                    if (i == 6)
                     {
+                        x += barWidth;
+                        graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2) + 10);
+                        x += barWidth;
+                        x += barWidth;
+                        graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2) + 10);
+                        x += barWidth;
                         x += barWidth;
                     }
                 }
+                graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2)+10);
+                x += barWidth;
+                x += barWidth;
+                graphics.FillRectangle(brush, x, 0, barWidth, (barHeight / 2)+10);
+                x += barWidth;
             }
 
             return barcodeImage;
@@ -188,7 +218,7 @@ namespace Kody
 
 
 
-        private string GetEAN13BinaryCode(int digit)
+        private string GetEAN13BinaryCode(int digit,int position)
         {
             string[] codesA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
             string[] codesB = { "0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111" };
@@ -207,17 +237,22 @@ namespace Kody
             };
 
             int[] codes;
-            if (digit < 4)
+
+
+            if (position <= 6)
             {
-                codes = codesA[digit].Select(c => c == '0' ? 0 : 1).ToArray();
-            }
-            else if (digit < 8)
-            {
-                codes = codesB[digit - 4].Select(c => c == '0' ? 0 : 1).ToArray();
+                if (matrixD[first][position-1] == 1)
+                {
+                    codes = codesA[digit].Select(c => c == '0' ? 0 : 1).ToArray();
+                }
+                else
+                {
+                    codes = codesB[digit].Select(c => c == '0' ? 0 : 1).ToArray();
+                }
             }
             else
             {
-                codes = codesC[digit - 8].Select(c => c == '0' ? 0 : 1).ToArray();
+                codes = codesC[digit].Select(c => c == '0' ? 0 : 1).ToArray();
             }
 
             return string.Join("", codes);
