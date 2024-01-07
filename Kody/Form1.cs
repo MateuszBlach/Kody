@@ -31,58 +31,6 @@ namespace Kody
         {
 
         }
-        
-        private void btnBarcode_Click2(object sender, EventArgs e)
-        {
-            //Zen.Barcode.CodeEan13BarcodeDraw barcode = Zen.Barcode.BarcodeDrawFactory.CodeEan13WithChecksum; // ustawienie trybu generowanie kodow EAN-13
-            if(txtBarcode.Text.Length == 12) {
-                
-                //pictureBox1.Padding = new Padding(50,50,50,50);
-                //pictureBox1.Image = barcode.Draw(txtBarcode.Text, 100,trackBar1.Value); // stworzenie obrazu w oknie na podstawie cyfr wprowadzonych w polu tekstowym
-   
-                
-                String input = txtBarcode.Text;
-                int checkSum = 0;
-                int factor = 1;
-                for (int i = 0; i < input.Length; i++) {
-
-                    if (i % 2 == 0) factor = 1;
-                    else factor = 3;
-                    checkSum += int.Parse(input[i].ToString())*factor;
-                }
-                checkSum = checkSum % 10;
-                checkSum = 10 - checkSum;
-                checkSum = checkSum % 10;
-
-                String barcodeString = "";
-                for(int i = 0; i < 12; i++) {
-                    barcodeString += input[i];
-                    if(trackBar1.Value > 2)barcodeString += " ";
-                }
-                barcodeString += checkSum;
-                var resultImage = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height + 20);
-
-                using (var graphics = Graphics.FromImage(resultImage))
-                using (var font = new Font("Consolas", 6+trackBar1.Value*2))
-                using (var brush = new SolidBrush(Color.Black))
-                using (var format = new StringFormat() {
-                    Alignment = StringAlignment.Center, 
-                    LineAlignment = StringAlignment.Far
-                }) {
-                    graphics.Clear(Color.White);
-                    graphics.DrawImage(pictureBox1.Image, 0, 0);
-                    graphics.DrawString(barcodeString, font, brush, resultImage.Width / 2, resultImage.Height, format);
-                }
-
-                pictureBox1.Image = resultImage;
-
-            } else {
-                MessageBox.Show("Wprowadz dokladnie 12 cyfr");
-            }
-
-
-        }
-        
 
         private void btnBarcode_Click(object sender, EventArgs e)
         {
@@ -109,7 +57,7 @@ namespace Kody
 
 
                 using (Graphics graphics = Graphics.FromImage(resultImage))
-                using (Font font = new Font("Consolas", 8 + trackBar1.Value * 2))
+                using (Font font = new Font("Consolas", 8))
                 using (SolidBrush brush = new SolidBrush(Color.Black))
                 using (StringFormat format = new StringFormat()
                 {
